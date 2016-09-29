@@ -9,9 +9,9 @@
 start_link() ->
   gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
-% state should be change with State that you will pass
 init([]) ->
-  {ok, state}.
+  Tab = ets:new(?MODULE, []),
+  {ok, Tab}.
 
 stop(_Pid) ->
   stop().
@@ -19,14 +19,21 @@ stop(_Pid) ->
 stop() ->
   gen_server:cast(?MODULE, stop).
 
-handle_call({method_name_and_params}, _From, State) ->
-  Response = ok,
-  {reply, Response, State};
+handle_call({write, Key, Value}, _From, Tab) ->
+  ets:insert(Tab, {Key, Value}),
+  {reply, ok, Tab};
+handle_call({read, Key}, _From, Tab) ->
+  Reply = case ets:lookup(Tab, Key) of
+            [{Key, Value}] ->
+             {ok, Value};
+            [] ->
+              {error, unknown_key}
+          end,
+  {reply, Reply, Tab};
+handle_call(_Message, _From, Tab) ->
+  {reply, {error, unknown_command}, Tab}.
 
-handle_call(_Message, _From, State) ->
-  {reply, error, State}.
-
-handle_cast(_Message, State) -> {noreply, State}.
-handle_info(_Message, State) -> {noreply, State}.
-terminate(_Reason, _State) -> ok.
-code_change(_OldVersion, State, _Extra) -> {ok, State}.
+handle_cast(_Message, Tab) -> {noreply, Tab}.
+handle_info(_Message, Tab) -> {noreply, Tab}.
+terminate(_Reason, _Tab) -> ok.
+code_change(_OldVersion, Tab, _Extra) -> {ok, Tab}.
