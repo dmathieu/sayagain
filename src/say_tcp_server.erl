@@ -1,21 +1,19 @@
 -module(say_tcp_server).
 -behavior(gen_nb_server).
 
--export([start_link/0,
-         add_listener/3,
-         remove_listener/3]).
-
+-export([start_link/0]).
 -export([init/2, handle_call/3, handle_cast/2, handle_info/2]).
 -export([terminate/2, sock_opts/0, new_connection/4]).
 
 start_link() ->
-    gen_nb_server:start_link(?MODULE, []).
-
-add_listener(Pid, IpAddr, Port) ->
-    gen_server:call(Pid, {add_listener, IpAddr, Port}).
-
-remove_listener(Pid, IpAddr, Port) ->
-    gen_server:call(Pid, {remove_listener, IpAddr, Port}).
+    case gen_nb_server:start_link(?MODULE, []) of
+      {ok, Pid} ->
+        case gen_server:call(Pid, {add_listener, say_config:get_address(), say_config:get_port()}) of
+          ok -> {ok, Pid};
+          {error, Error} -> {error, add_listener, Error}
+        end;
+      {error, Error} -> {error, start_link, Error}
+    end.
 
 init([], State) ->
     {ok, State}.
