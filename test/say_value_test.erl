@@ -1,7 +1,5 @@
 -module(say_value_test).
-
 -include_lib("eunit/include/eunit.hrl").
-
 
 setup() ->
   process_flag(trap_exit, true),
