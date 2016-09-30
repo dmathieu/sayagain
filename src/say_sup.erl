@@ -31,7 +31,7 @@ init([]) ->
   {ok, { {one_for_one, 0, 1},
          [
           {say_value, {say_value, start_link, []}, permanent, 2000, worker, [say_value]},
-          {say_server_sup, {say_server_sup, start_link, []}, permanent, 2000, supervisor, [say_server_sup]}
+          {say_tcp_server, {say_tcp_server, start_link, []}, permanent, 2000, worker, [say_tcp_server]}
          ]
        } }.
 
