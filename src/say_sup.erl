@@ -30,7 +30,8 @@ start_link() ->
 init([]) ->
   {ok, { {one_for_all, 0, 1},
          [
-          {say_value, {say_value, start_link, []}, permanent, 2000, worker, [say_server]}
+          {say_value, {say_value, start_link, []}, permanent, 2000, worker, [say_value]},
+          {say_tcp_server, {say_tcp_server, start_link, []}, permanent, 2000, worker, [say_tcp_server]}
          ]
        } }.
 

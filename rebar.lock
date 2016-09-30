@@ -1,1 +1,4 @@
-[].
+[{<<"gen_nb_server">>,
+  {git,"git://github.com/kevsmith/gen_nb_server.git",
+       {ref,"ce8c342cb82b33368a6bc37893db116fd7d1f543"}},
+  0}].
