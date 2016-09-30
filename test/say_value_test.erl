@@ -1,11 +1,11 @@
--module(sayagain_server_test).
+-module(say_value_test).
 
 -include_lib("eunit/include/eunit.hrl").
 
 
 setup() ->
   process_flag(trap_exit, true),
-  {ok, Pid} = sayagain_server:start_link(),
+  {ok, Pid} = say_value:start_link(),
   Pid.
 
 cleanup(Pid) ->

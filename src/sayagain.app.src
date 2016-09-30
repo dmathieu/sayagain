@@ -2,7 +2,7 @@
  [{description, "A (very) simple HTTP key-value store"},
   {vsn, "0.1.0"},
   {registered, []},
-  {mod, { sayagain_app, []}},
+  {mod, { say_app, []}},
   {applications,
    [kernel,
     stdlib
