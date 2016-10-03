@@ -1,0 +1,7 @@
+[
+  {lager, [
+    {handlers, [
+      {lager_file_backend, [{file, "log/debug.log"}, {level, debug}, {size, 104857600}, {count, 5}]}
+    ]}
+  ]}
+].

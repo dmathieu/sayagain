@@ -1,8 +1,11 @@
+setup:
+	cp -n sayagain.config.sample sayagain.config; echo ""
+
 clean:
 	rebar3 clean
 
-test: clean
+test: setup clean
 	rebar3 eunit; rebar3 ct
 
-run: clean
+run: setup clean
 	rebar3 shell

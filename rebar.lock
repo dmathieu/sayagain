@@ -1,4 +1,12 @@
 [{<<"gen_nb_server">>,
   {git,"git://github.com/kevsmith/gen_nb_server.git",
        {ref,"ce8c342cb82b33368a6bc37893db116fd7d1f543"}},
+  0},
+ {<<"goldrush">>,
+  {git,"https://github.com/basho/goldrush.git",
+       {ref,"8f1b715d36b650ec1e1f5612c00e28af6ab0de82"}},
+  1},
+ {<<"lager">>,
+  {git,"git://github.com/basho/lager.git",
+       {ref,"571aa65c565c351d1b0a1f04076dd5bd291e836e"}},
   0}].
