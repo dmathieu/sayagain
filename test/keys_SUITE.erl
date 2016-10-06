@@ -6,17 +6,9 @@ all() ->
   [set_and_get].
 
 init_per_suite(Config) ->
-  application:set_env(sayagain, address, "127.0.0.1"),
-  application:set_env(sayagain, port, 5000),
-  process_flag(trap_exit, true),
-  {ok, Pid} = say_tcp_server:start_link(),
-
+  NewConfig = start_server(Config),
   {ok, Client} = connect_erldis(10),
-  lists:keystore(client, 1,
-                 lists:keystore(server, 1,
-                                Config,
-                                {server, Pid}),
-                 {client, Client}).
+  lists:keystore(client, 1, NewConfig, {client, Client}).
 
 init_per_testcase(_TestCase,Config) ->
   {client,Client} = lists:keyfind(client, 1, Config),
@@ -24,11 +16,21 @@ init_per_testcase(_TestCase,Config) ->
   Config.
 
 end_per_suite(Config) ->
+  stop_server(Config),
+  ok.
+
+start_server(Config) ->
+  application:set_env(sayagain, address, "127.0.0.1"),
+  application:set_env(sayagain, port, 5000),
+  process_flag(trap_exit, true),
+  {ok, Pid} = say_tcp_server:start_link(),
+  lists:keystore(server, 1, Config, {server, Pid}).
+
+stop_server(Config) ->
   application:unset_env(sayagain, address),
   application:unset_env(sayagain, port),
   {server, Pid} = lists:keyfind(server, 1, Config),
-  exit(Pid, kill), %% brutal kill!
-  ok.
+  exit(Pid, kill). %% brutal kill!
 
 connect_erldis(0) -> {error,{socket_error,econnrefused}};
 connect_erldis(Times) ->
