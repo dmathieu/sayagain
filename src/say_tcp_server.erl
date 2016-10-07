@@ -18,8 +18,7 @@ handle_cast(accept, State = #state{socket=ListenSocket}) ->
   say_tcp_sup:start_socket(),
   send(AcceptSocket, "Hello", []),
   {noreply, State#state{socket=AcceptSocket}};
-handle_cast(Request, State = #state{socket=Socket}) ->
-  send(Socket, Request, []),
+handle_cast(_, State) ->
   {noreply, State}.
 
 handle_info({tcp, Socket, Msg}, State) ->
