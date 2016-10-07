@@ -1,11 +1,11 @@
--module(say_tcp_server_test).
+-module(say_tcp_test).
 -include_lib("eunit/include/eunit.hrl").
 
 setup() ->
   application:set_env(sayagain, address, "127.0.0.1"),
   application:set_env(sayagain, port, 5000),
   process_flag(trap_exit, true),
-  {ok, Pid} = say_tcp_server:start_link(),
+  {ok, Pid} = say_tcp_sup:start_link(),
   Pid.
 
 cleanup(Pid) ->
@@ -35,6 +35,5 @@ request_with_data_test() ->
   {ok, Socket} = gen_tcp:connect({127,0,0,1}, 5000, [{active,false}]),
   gen_tcp:recv(Socket, 0),
   ?assertEqual(ok, gen_tcp:send(Socket, "Hello World!")),
-  ?assertEqual({ok, "Hello World!"}, gen_tcp:recv(Socket, 0)),
   ?assertEqual(ok, gen_tcp:close(Socket)),
   cleanup(Pid).

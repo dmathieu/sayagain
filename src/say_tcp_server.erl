@@ -1,72 +1,41 @@
 -module(say_tcp_server).
--behavior(gen_nb_server).
+-behaviour(gen_server).
 
--export([start_link/0]).
--export([init/2, handle_call/3, handle_cast/2, handle_info/2]).
--export([terminate/2, sock_opts/0, new_connection/4]).
+-export([start_link/1]).
+-export([init/1, handle_call/3, handle_cast/2, handle_info/2, code_change/3, terminate/2]).
 
-start_link() ->
-  case gen_nb_server:start_link(?MODULE, []) of
-    {ok, Pid} ->
-      case gen_server:call(Pid, {add_listener, say_config:get_address(), say_config:get_port()}) of
-        ok ->
-          lager:debug("Started TCP listener"),
-          {ok, Pid};
-        {error, Error} -> {error, add_listener, Error}
-      end;
-    {error, Error} -> {error, start_link, Error}
-  end.
+-record(state, {socket}).
 
-init([], State) ->
-  {ok, State}.
+start_link(Socket) ->
+  gen_server:start_link(?MODULE, Socket, []).
 
-handle_call({add_listener, IpAddr, Port}, _From, State) ->
-  case gen_nb_server:add_listen_socket({IpAddr, Port}, State) of
-    {ok, State1} ->
-      {reply, ok, State1};
-    Error ->
-      {reply, Error, State}
-  end;
-handle_call({remove_listener, IpAddr, Port}, _From, State) ->
-  case gen_nb_server:remove_listen_socket({IpAddr, Port}, State) of
-    {ok, State1} ->
-      {reply, ok, State1};
-    Error ->
-      {reply, Error, State}
-  end;
-handle_call(_Msg, _From, State) ->
-  {reply, ignored, State}.
+init(Socket) ->
+  gen_server:cast(self(), accept),
+  {ok, #state{socket=Socket}}.
 
-handle_cast(_Msg, State) ->
+handle_cast(accept, State = #state{socket=ListenSocket}) ->
+  {ok, AcceptSocket} = gen_tcp:accept(ListenSocket),
+  say_tcp_sup:start_socket(),
+  send(AcceptSocket, "Hello", []),
+  {noreply, State#state{socket=AcceptSocket}};
+handle_cast(Request, State = #state{socket=Socket}) ->
+  send(Socket, Request, []),
   {noreply, State}.
 
-handle_info({tcp, Sock, Data}, State) ->
-  Me = self(),
-  P = spawn(fun() -> worker(Me, Sock, Data) end),
-  gen_tcp:controlling_process(Sock, P),
+handle_info({tcp, Socket, Msg}, State) ->
+  send(Socket, Msg, []),
   {noreply, State};
-
-handle_info(_Msg, State) ->
+handle_info({tcp_closed, _Socket}, State) -> {stop, normal, State};
+handle_info({tcp_error, _Socket, _}, State) -> {stop, normal, State};
+handle_info(E, State) ->
+  io:fwrite("unexpected: ~p~n", [E]),
   {noreply, State}.
 
-terminate(_Reason, _State) ->
+handle_call(_E, _From, State) -> {noreply, State}.
+terminate(_Reason, _Tab) -> ok.
+code_change(_OldVersion, Tab, _Extra) -> {ok, Tab}.
+
+send(Socket, Str, Args) ->
+  ok = gen_tcp:send(Socket, io_lib:format(Str++"~n", Args)),
+  ok = inet:setopts(Socket, [{active, once}]),
   ok.
-
-sock_opts() ->
-  [binary, {active, once}, {packet, 0}].
-
-new_connection(_IpAddr, _Port, Sock, State) ->
-  Me = self(),
-  P = spawn(fun() -> worker(Me, Sock) end),
-  gen_tcp:controlling_process(Sock, P),
-  {ok, State}.
-
-worker(Owner, Sock) ->
-  gen_tcp:send(Sock, "Hello\n"),
-  inet:setopts(Sock, [{active, once}]),
-  gen_tcp:controlling_process(Sock, Owner).
-
-worker(Owner, Sock, Data) ->
-  gen_tcp:send(Sock, Data),
-  inet:setopts(Sock, [{active, once}]),
-  gen_tcp:controlling_process(Sock, Owner).
