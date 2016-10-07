@@ -21,6 +21,9 @@ handle_cast(accept, State = #state{socket=ListenSocket}) ->
 handle_cast(_, State) ->
   {noreply, State}.
 
+handle_info({tcp, Socket, "quit"++_}, State) ->
+  gen_tcp:close(Socket),
+  {stop, normal, State};
 handle_info({tcp, Socket, Msg}, State) ->
   send(Socket, Msg, []),
   {noreply, State};
