@@ -16,7 +16,6 @@ init(Socket) ->
 handle_cast(accept, State = #state{socket=ListenSocket}) ->
   {ok, AcceptSocket} = gen_tcp:accept(ListenSocket),
   say_tcp_sup:start_socket(),
-  send(AcceptSocket, "Hello", []),
   {noreply, State#state{socket=AcceptSocket}};
 handle_cast(_, State) ->
   {noreply, State}.
@@ -25,7 +24,12 @@ handle_info({tcp, Socket, "quit"++_}, State) ->
   gen_tcp:close(Socket),
   {stop, normal, State};
 handle_info({tcp, Socket, Msg}, State) ->
-  send(Socket, Msg, []),
+  [Command|Args] = binary:split(list_to_binary(Msg), [<<" ">>, <<"\r\n">>], [global,trim]),
+  lager:debug(Command),
+  case say_command:run(Command, Args) of
+    {ok, Data} -> send(Socket, Data, []);
+    {error, Error} -> lager:debug(Error)
+  end,
   {noreply, State};
 handle_info({tcp_closed, _Socket}, State) -> {stop, normal, State};
 handle_info({tcp_error, _Socket, _}, State) -> {stop, normal, State};
