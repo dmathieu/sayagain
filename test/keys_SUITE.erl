@@ -23,8 +23,8 @@ start_server(Config) ->
   application:set_env(sayagain, address, "127.0.0.1"),
   application:set_env(sayagain, port, 5000),
   process_flag(trap_exit, true),
-  {ok, Pid} = say_tcp_server:start_link(),
-  lists:keystore(server, 1, Config, {server, Pid}).
+  {ok, Pid} = say_tcp_sup:start_link(),
+  lists:keystore(server,1, Config, {server, Pid}).
 
 stop_server(Config) ->
   application:unset_env(sayagain, address),

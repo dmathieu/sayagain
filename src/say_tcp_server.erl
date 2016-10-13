@@ -24,24 +24,25 @@ handle_info({tcp, Socket, "quit"++_}, State) ->
   gen_tcp:close(Socket),
   {stop, normal, State};
 handle_info({tcp, Socket, Msg}, State) ->
-  [Command|Args] = binary:split(list_to_binary(Msg), [<<" ">>, <<"\r\n">>], [global,trim]),
-  lager:debug(Command),
-  case say_command:run(Command, Args) of
-    {ok, Data} -> send(Socket, Data, []);
-    {error, Error} -> lager:debug(Error)
-  end,
+  lager:debug("Received command ~p", [list_to_binary(Msg)]),
+  [Command|Args] = command_parser:from_redis(list_to_binary(Msg)),
+  lager:debug("Splitted into ~p / ~p", [Command, Args]),
+  Data = say_command:run(Command, Args),
+  ParsedData = command_parser:to_redis(Data),
+  lager:debug("Sending ~p / From ~p", [ParsedData, Data]),
+  send(Socket, ParsedData),
   {noreply, State};
 handle_info({tcp_closed, _Socket}, State) -> {stop, normal, State};
 handle_info({tcp_error, _Socket, _}, State) -> {stop, normal, State};
 handle_info(E, State) ->
-  io:fwrite("unexpected: ~p~n", [E]),
+  lager:debug("unexpected: ~p~n", [E]),
   {noreply, State}.
 
 handle_call(_E, _From, State) -> {noreply, State}.
 terminate(_Reason, _Tab) -> ok.
 code_change(_OldVersion, Tab, _Extra) -> {ok, Tab}.
 
-send(Socket, Str, Args) ->
-  ok = gen_tcp:send(Socket, io_lib:format(Str++"~n", Args)),
+send(Socket, Str) ->
+  ok = gen_tcp:send(Socket, Str),
   ok = inet:setopts(Socket, [{active, once}]),
   ok.
