@@ -1,4 +1,4 @@
--module(command_parser).
+-module(say_command_parser).
 
 -export([to_redis/1, from_redis/1]).
 

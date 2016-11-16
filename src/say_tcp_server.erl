@@ -25,10 +25,10 @@ handle_info({tcp, Socket, "quit"++_}, State) ->
   {stop, normal, State};
 handle_info({tcp, Socket, Msg}, State) ->
   lager:debug("Received command ~p", [list_to_binary(Msg)]),
-  [Command|Args] = command_parser:from_redis(list_to_binary(Msg)),
+  [Command|Args] = say_command_parser:from_redis(list_to_binary(Msg)),
   lager:debug("Splitted into ~p / ~p", [Command, Args]),
   Data = say_command:run(Command, Args),
-  ParsedData = command_parser:to_redis(Data),
+  ParsedData = say_command_parser:to_redis(Data),
   lager:debug("Sending ~p / From ~p", [ParsedData, Data]),
   send(Socket, ParsedData),
   {noreply, State};
