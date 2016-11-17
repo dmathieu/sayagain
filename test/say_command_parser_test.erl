@@ -21,9 +21,9 @@ from_redis_ok_test() ->
   ?assertEqual(ok, say_command_parser:from_redis(<<"+OK\r\n">>)).
 
 from_redis_msg_test() ->
-  ?assertEqual([<<"Hello">>, <<"World">>], say_command_parser:from_redis(<<"$11\r\nHello World\r\n">>)).
+  ?assertEqual([<<"Hello">>, <<"World">>], say_command_parser:from_redis(<<"$5\r\nHello\r\n$5\r\nWorld\r\n">>)).
 
 from_redis_array_test() ->
   ?assertEqual(
-     [[<<"Hello">>, <<"World">>], [<<"Bonjour">>, <<"Monde">>]],
-     say_command_parser:from_redis(<<"*2\r\n$5\r\nHello World\r\n$5\r\nBonjour Monde\r\n">>)).
+     [[<<"GET">>, <<"foobar">>], [<<"SET">>, <<"foobar">>, <<"hello">>]],
+     say_command_parser:from_redis(<<"*2\r\n$3\r\nGET\r\n$6\r\nfoobar\r\n*3\r\n$3\r\nSET\r\n$6\r\nfoobar\r\n$5\r\nhello">>)).
