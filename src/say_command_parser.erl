@@ -3,30 +3,33 @@
 -export([to_redis/1, from_redis/1]).
 
 %% Parse a string to be sent to redis
-to_redis(ok) ->
-  <<"+OK\r\n">>;
-to_redis({error, Msg}) ->
-  list_to_binary(["-ERR ", Msg, "\r\n"]);
-to_redis([]) ->
-  <<"">>;
-to_redis([F|R]) when is_integer(F)->
-  list_to_binary([string_header([F|R]), [F|R], "\r\n"]);
-to_redis([Msg|Others]) ->
-  list_to_binary([array_header([Msg|Others]), to_redis(Msg), to_redis(Others, [{array_header, false}])]).
+to_redis(ok) -> <<"+OK\r\n">>;
+to_redis({error, Msg}) -> list_to_binary(["-ERR ", Msg, "\r\n"]);
+to_redis([]) -> <<"">>;
+to_redis(Msg) -> parse_to_redis(Msg).
 
-to_redis([], _Options) ->
-  <<"">>;
-to_redis([Msg|Others], Options) ->
-  case lists:keyfind(array_header, 1, Options) of
-    false -> to_redis([Msg|Others]);
-    {array_header, true} -> to_redis([Msg|Others]);
-    {array_header, false} -> list_to_binary([to_redis(Msg), to_redis(Others, Options)])
-  end.
 
-string_header(Data) ->
-  list_to_binary(["$", integer_to_list(length(Data)), "\r\n"]).
-array_header(Data) ->
-  list_to_binary(["*", integer_to_list(length(Data)), "\r\n"]).
+parse_to_redis(Msg) -> list_to_binary(format_entry(Msg)).
+
+parse_to_redis([], Data) -> Data;
+parse_to_redis([H|T], Data) -> parse_to_redis(T, [Data, format_entry(H)]);
+parse_to_redis(E, Data) -> list_to_binary([Data, format_entry(E)]).
+
+format_entry(E) when is_binary(E)->
+	[
+		<<"$">>,
+		integer_to_binary(byte_size(E)),
+		<<"\r\n">>,
+		E,
+		<<"\r\n">>
+	];
+format_entry(E) ->
+	[
+		<<"*">>,
+		integer_to_binary(length(E)),
+		<<"\r\n">>,
+		parse_to_redis(E, [])
+	].
 
 %% Parse redis array to a string
 from_redis(<<"+OK\r\n">>) -> ok;
