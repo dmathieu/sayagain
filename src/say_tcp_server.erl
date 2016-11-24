@@ -20,16 +20,10 @@ handle_cast(accept, State = #state{socket=ListenSocket}) ->
 handle_cast(_, State) ->
   {noreply, State}.
 
-handle_info({tcp, Socket, "quit"++_}, State) ->
-  gen_tcp:close(Socket),
-  {stop, normal, State};
 handle_info({tcp, Socket, Msg}, State) ->
-  lager:debug("Received command ~p", [list_to_binary(Msg)]),
   [Command|Args] = say_command_parser:from_redis(list_to_binary(Msg)),
-  lager:debug("Splitted into ~p / ~p", [Command, Args]),
   Data = say_command:run(Command, Args),
   ParsedData = say_command_parser:to_redis(Data),
-  lager:debug("Sending ~p / From ~p", [ParsedData, Data]),
   send(Socket, ParsedData),
   {noreply, State};
 handle_info({tcp_closed, _Socket}, State) -> {stop, normal, State};
