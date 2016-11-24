@@ -15,21 +15,31 @@ parse_to_redis([], Data) -> Data;
 parse_to_redis([H|T], Data) -> parse_to_redis(T, [Data, format_entry(H)]);
 parse_to_redis(E, Data) -> list_to_binary([Data, format_entry(E)]).
 
-format_entry(E) when is_binary(E)->
+format_entry(E) when is_list(E)->
+  [
+    <<"*">>,
+    entry_length(E),
+    <<"\r\n">>,
+    parse_to_redis(E, [])
+  ];
+format_entry(E)->
 	[
 		<<"$">>,
-		integer_to_binary(byte_size(E)),
+    entry_length(E),
 		<<"\r\n">>,
-		E,
+    entry_value(E),
 		<<"\r\n">>
-	];
-format_entry(E) ->
-	[
-		<<"*">>,
-		integer_to_binary(length(E)),
-		<<"\r\n">>,
-		parse_to_redis(E, [])
 	].
+
+entry_value(E) when is_atom(E) -> atom_to_binary(E, utf8);
+entry_value(E) when is_integer(E) -> integer_to_binary(E);
+entry_value(E) when is_list(E) -> list_to_binary(E);
+entry_value(E) when is_binary(E) -> E.
+
+entry_length(E) when is_atom(E) -> entry_length(atom_to_list(E));
+entry_length(E) when is_binary(E) -> entry_length(binary_to_list(E));
+entry_length(E) when is_integer(E) -> <<"1">>;
+entry_length(E) when is_list(E) -> integer_to_binary(length(E)).
 
 %% Parse redis array to a string
 from_redis(<<"+OK\r\n">>) -> ok;

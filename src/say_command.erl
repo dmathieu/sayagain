@@ -30,9 +30,9 @@ execute(<<"SET">>, Args) -> say_value:run(write, Args);
 execute(<<"FLUSHALL">>, _Args) -> say_value:run(flush, []);
 execute(<<"COMMAND">>, _Args) ->
   [
-    [<<"get">>, <<"1">>, [<<"readonly">>], <<"1">>, <<"1">>, <<"1">>],
-    [<<"set">>, <<"2">>, [<<"write">>, <<"denyroom">>], <<"1">>, <<"1">>, <<"1">>],
-    [<<"flushdb">>, <<"0">>, [<<"write">>, <<"denyroom">>], <<"1">>, <<"1">>, <<"1">>]
+    [get, 1, [readonly], 1, 1, 1],
+    [set, 2, [write, denyroom], 1, 1, 1],
+    [flushall, 0, [write, denyroom], 1, 1, 1]
   ];
 execute(Msg, _Args) ->
   {error, lists:concat(["unknown command '", erlang:binary_to_list(Msg), "'"])}.
