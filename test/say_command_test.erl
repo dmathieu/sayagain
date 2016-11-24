@@ -3,7 +3,7 @@
 
 setup() ->
   process_flag(trap_exit, true),
-  {ok, Pid} = say_command:start_link(),
+  {ok, Pid} = say_cmd_sup:start_link(),
   Pid.
 
 cleanup(Pid) ->
@@ -15,12 +15,23 @@ unknown_command_test() ->
   ?assertEqual({error, "unknown command 'foobar'"}, say_command:run(<<"foobar">>, test)),
   cleanup(Pid).
 
-get_command_test() -> 
+get_command_test() ->
   Pid = setup(),
-  ?assertEqual(<<"Hello">>, say_command:run(<<"GET">>, "foobar")),
+  say_command:run(<<"SET">>, [<<"foobar">>, "Hello"]),
+  ?assertEqual("Hello", say_command:run(<<"GET">>, [<<"foobar">>])),
   cleanup(Pid).
 
-set_command_test() -> 
+get_unknown_key_test() ->
+  Pid = setup(),
+  ?assertEqual({error, "unknown key 'foobar'"}, say_command:run(<<"GET">>, [<<"foobar">>])),
+  cleanup(Pid).
+
+set_command_test() ->
   Pid = setup(),
   ?assertEqual(ok, say_command:run(<<"SET">>, ["foobar", "test"])),
+  cleanup(Pid).
+
+flushall_command_test() ->
+  Pid = setup(),
+  ?assertEqual(ok, say_command:run(<<"FLUSHALL">>, [])),
   cleanup(Pid).

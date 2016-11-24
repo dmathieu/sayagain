@@ -1,9 +1,4 @@
-%%%-------------------------------------------------------------------
-%% @doc say top level supervisor.
-%% @end
-%%%-------------------------------------------------------------------
-
--module(say_sup).
+-module(say_cmd_sup).
 
 -behaviour(supervisor).
 
@@ -30,7 +25,7 @@ start_link() ->
 init([]) ->
   {ok, { {one_for_one, 0, 1},
          [
-          {say_cmd_sup, {say_cmd_sup, start_link, []}, permanent, 2000, supervisor, [say_cmd_sup]},
-          {say_tcp_sup, {say_tcp_sup, start_link, []}, permanent, 2000, supervisor, [say_tcp_sup]}
+          {say_value, {say_value, start_link, []}, permanent, 2000, worker, [say_value]},
+          {say_command, {say_command, start_link, []}, permanent, 2000, worker, [say_command]}
          ]
        } }.

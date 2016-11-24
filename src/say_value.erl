@@ -1,7 +1,7 @@
 -module(say_value).
 -behaviour(gen_server).
 
--export([start_link/0]).
+-export([start_link/0, run/2]).
 -export([init/1, handle_call/3, handle_cast/2, terminate/2, handle_info/2, code_change/3, stop/1]).
 
 % public api
@@ -19,15 +19,21 @@ stop(_Pid) ->
 stop() ->
   gen_server:cast(?MODULE, stop).
 
-handle_call({write, Key, Value}, _From, Tab) ->
+run(Cmd, Args) ->
+  gen_server:call(?MODULE, {Cmd, Args}).
+
+handle_call({flush, []}, _From, Tab) ->
+  ets:delete(Tab),
+  {reply, ok, ets:new(?MODULE, [])};
+handle_call({write, [Key, Value]}, _From, Tab) ->
   ets:insert(Tab, {Key, Value}),
   {reply, ok, Tab};
-handle_call({read, Key}, _From, Tab) ->
+handle_call({read, [Key]}, _From, Tab) ->
   Reply = case ets:lookup(Tab, Key) of
             [{Key, Value}] ->
-             {ok, Value};
+              Value;
             [] ->
-              {error, unknown_key}
+              {error, lists:concat(["unknown key '", binary_to_list(Key), "'"])}
           end,
   {reply, Reply, Tab};
 handle_call(_Message, _From, Tab) ->
