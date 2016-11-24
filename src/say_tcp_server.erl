@@ -21,7 +21,7 @@ handle_cast(_, State) ->
   {noreply, State}.
 
 handle_info({tcp, Socket, Msg}, State) ->
-  [Command|Args] = say_command_parser:from_redis(list_to_binary(Msg)),
+  [Command|Args] = say_command_parser:from_redis(Msg),
   Data = say_command:run(Command, Args),
   ParsedData = say_command_parser:to_redis(Data),
   send(Socket, ParsedData),
