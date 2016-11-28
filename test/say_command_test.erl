@@ -21,6 +21,12 @@ get_command_test() ->
   ?assertEqual("Hello", say_command:run(<<"GET">>, [<<"foobar">>])),
   cleanup(Pid).
 
+get_lower_command_test() ->
+  Pid = setup(),
+  say_command:run(<<"set">>, [<<"foobar">>, "Hello"]),
+  ?assertEqual("Hello", say_command:run(<<"get">>, [<<"foobar">>])),
+  cleanup(Pid).
+
 get_unknown_key_test() ->
   Pid = setup(),
   ?assertEqual({error, "unknown key 'foobar'"}, say_command:run(<<"GET">>, [<<"foobar">>])),

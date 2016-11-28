@@ -11,7 +11,8 @@ init([]) ->
   {ok, {}}.
 
 run(Cmd, Args) ->
-  gen_server:call(?MODULE, {Cmd, Args}).
+  AtomCmd = list_to_atom(string:to_lower(binary_to_list(Cmd))),
+  gen_server:call(?MODULE, {AtomCmd, Args}).
 
 handle_call({Cmd, Args}, _From, State) ->
   {reply, execute(Cmd, Args), State};
@@ -25,14 +26,14 @@ handle_info(_Message, Tab) -> {noreply, Tab}.
 terminate(_Reason, _Tab) -> ok.
 code_change(_OldVersion, Tab, _Extra) -> {ok, Tab}.
 
-execute(<<"GET">>, Args) -> say_value:run(read, Args);
-execute(<<"SET">>, Args) -> say_value:run(write, Args);
-execute(<<"FLUSHALL">>, _Args) -> say_value:run(flush, []);
-execute(<<"COMMAND">>, _Args) ->
+execute(get, Args) -> say_value:run(read, Args);
+execute(set, Args) -> say_value:run(write, Args);
+execute(flushall, _Args) -> say_value:run(flush, []);
+execute(command, _Args) ->
   [
     [get, 1, [readonly], 1, 1, 1],
     [set, 2, [write, denyroom], 1, 1, 1],
     [flushall, 0, [write, denyroom], 1, 1, 1]
   ];
 execute(Msg, _Args) ->
-  {error, lists:concat(["unknown command '", erlang:binary_to_list(Msg), "'"])}.
+  {error, lists:concat(["unknown command '", Msg, "'"])}.
