@@ -12,7 +12,7 @@ init_per_suite(Config) ->
 
 init_per_testcase(_TestCase,Config) ->
   {client,Client} = lists:keyfind(client, 1, Config),
-  erldis_client:sr_scall(Client,[<<"flushdb">>]),
+  erldis_client:sr_scall(Client,[<<"flushall">>]),
   Config.
 
 end_per_suite(Config) ->
