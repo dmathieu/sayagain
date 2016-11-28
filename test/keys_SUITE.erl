@@ -20,10 +20,10 @@ end_per_suite(Config) ->
   ok.
 
 start_server(Config) ->
-  application:set_env(sayagain, address, "127.0.0.1"),
+  application:set_env(sayagain, address, localhost),
   application:set_env(sayagain, port, 5000),
   process_flag(trap_exit, true),
-  {ok, Pid} = say_tcp_sup:start_link(),
+  {ok, Pid} = say_sup:start_link(),
   lists:keystore(server,1, Config, {server, Pid}).
 
 stop_server(Config) ->
@@ -36,7 +36,7 @@ connect_erldis(0) -> {error,{socket_error,econnrefused}};
 connect_erldis(Times) ->
   timer:sleep(2000),
   case erldis:connect(localhost, 5000) of
-    {ok,Client} -> {ok,Client};
+    {ok,Client} -> {ok, Client};
     _ -> connect_erldis(Times - 1)
   end.
 
