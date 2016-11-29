@@ -28,7 +28,7 @@ start_link() ->
 
 %% Child :: {Id,StartFunc,Restart,Shutdown,Type,Modules}
 init([]) ->
-  {ok, { {one_for_one, 0, 1},
+  {ok, { {one_for_one, 10, 10},
          [
           {say_cmd_sup, {say_cmd_sup, start_link, []}, permanent, 2000, supervisor, [say_cmd_sup]},
           {say_tcp_sup, {say_tcp_sup, start_link, []}, permanent, 2000, supervisor, [say_tcp_sup]}
