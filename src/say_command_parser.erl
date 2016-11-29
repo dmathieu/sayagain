@@ -13,8 +13,7 @@ to_redis(Msg) -> parse_to_redis(Msg).
 parse_to_redis(Msg) -> list_to_binary(format_entry(Msg)).
 
 parse_to_redis([], Data) -> Data;
-parse_to_redis([H|T], Data) -> parse_to_redis(T, [Data, format_entry(H)]);
-parse_to_redis(E, Data) -> list_to_binary([Data, format_entry(E)]).
+parse_to_redis([H|T], Data) -> parse_to_redis(T, [Data, format_entry(H)]).
 
 format_entry(E) when is_list(E)->
   [
