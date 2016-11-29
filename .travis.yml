@@ -1,2 +1,9 @@
 language: erlang
-script: make test
+install: "true" # don't let travis run get-deps
+script: "./rebar3 do update, eunit, ct, dialyzer"
+cache:
+  directories:
+  - $HOME/.cache/rebar3/
+otp_release:
+- 19.0.3
+- 18.3
