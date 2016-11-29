@@ -32,12 +32,12 @@ read_test() ->
   cleanup(Pid).
 unknown_value_read_test() ->
   Pid = setup(),
-  ?assertEqual({error, "unknown key 'hello'"}, gen_server:call(Pid, {read, [<<"hello">>]})),
+  ?assertEqual(nil, gen_server:call(Pid, {read, [<<"hello">>]})),
   cleanup(Pid).
 
 flush_test() ->
   Pid = setup(),
   gen_server:call(Pid, {write, [hello, world]}),
   ?assertEqual(ok, gen_server:call(Pid, {flush, []})),
-  ?assertEqual({error, "unknown key 'hello'"}, gen_server:call(Pid, {read, [<<"hello">>]})),
+  ?assertEqual(nil, gen_server:call(Pid, {read, [<<"hello">>]})),
   cleanup(Pid).

@@ -29,7 +29,7 @@ get_lower_command_test() ->
 
 get_unknown_key_test() ->
   Pid = setup(),
-  ?assertEqual({error, "unknown key 'foobar'"}, say_command:run(<<"GET">>, [<<"foobar">>])),
+  ?assertEqual(nil, say_command:run(<<"GET">>, [<<"foobar">>])),
   cleanup(Pid).
 
 set_command_test() ->

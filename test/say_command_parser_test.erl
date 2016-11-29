@@ -4,6 +4,9 @@
 to_redis_ok_test() ->
   ?assertEqual(<<"+OK\r\n">>, say_command_parser:to_redis(ok)).
 
+to_redis_nil_test() ->
+  ?assertEqual(<<"$-1\r\n">>, say_command_parser:to_redis(nil)).
+
 to_redis_error_test() ->
   ?assertEqual(
      <<"-ERR unknown command 'foobar'\r\n">>,
@@ -28,6 +31,9 @@ to_redis_nested_array_test() ->
 
 from_redis_ok_test() ->
   ?assertEqual(ok, say_command_parser:from_redis(<<"+OK\r\n">>)).
+
+from_redis_nil_test() ->
+  ?assertEqual(nil, say_command_parser:from_redis(<<"$-1\r\n">>)).
 
 from_redis_msg_test() ->
   ?assertEqual([<<"Hello">>, <<"World">>], say_command_parser:from_redis(<<"$5\r\nHello\r\n$5\r\nWorld\r\n">>)).

@@ -4,6 +4,7 @@
 
 %% Parse a string to be sent to redis
 to_redis(ok) -> <<"+OK\r\n">>;
+to_redis(nil) -> <<"$-1\r\n">>;
 to_redis({error, Msg}) -> list_to_binary(["-ERR ", Msg, "\r\n"]);
 to_redis([]) -> <<"">>;
 to_redis(Msg) -> parse_to_redis(Msg).
@@ -43,6 +44,7 @@ entry_length(E) when is_list(E) -> integer_to_binary(length(E)).
 
 %% Parse redis array to a string
 from_redis(<<"+OK\r\n">>) -> ok;
+from_redis(<<"$-1\r\n">>) -> nil;
 from_redis(Msg) ->
   SplittedMsg = binary:split(Msg, [<<"\r\n">>], [global,trim]),
   parse_from_redis(SplittedMsg).

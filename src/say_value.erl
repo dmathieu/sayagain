@@ -33,7 +33,7 @@ handle_call({read, [Key]}, _From, Tab) ->
             [{Key, Value}] ->
               Value;
             [] ->
-              {error, lists:concat(["unknown key '", binary_to_list(Key), "'"])}
+              nil
           end,
   {reply, Reply, Tab};
 handle_call(_Message, _From, Tab) ->
