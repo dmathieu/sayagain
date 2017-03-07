@@ -1,45 +1,29 @@
 -module(say_value).
--behaviour(gen_server).
 
--export([start_link/0, run/2]).
--export([init/1, handle_call/3, handle_cast/2, terminate/2, handle_info/2, code_change/3, stop/1]).
+-export([read/1, write/2, flush/0]).
 
-% public api
+flush() ->
+  setup(),
+  ets:delete(value),
+  ok.
 
-start_link() ->
-  gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
+write(Key, Value) ->
+  setup(),
+  ets:insert(value, {Key, Value}),
+  ok.
 
-init([]) ->
-  Tab = ets:new(?MODULE, []),
-  {ok, Tab}.
-
-stop(_Pid) ->
-  stop().
-
-stop() ->
-  gen_server:cast(?MODULE, stop).
-
-run(Cmd, Args) ->
-  gen_server:call(?MODULE, {Cmd, Args}).
-
-handle_call({flush, []}, _From, Tab) ->
-  ets:delete(Tab),
-  {reply, ok, ets:new(?MODULE, [])};
-handle_call({write, [Key, Value]}, _From, Tab) ->
-  ets:insert(Tab, {Key, Value}),
-  {reply, ok, Tab};
-handle_call({read, [Key]}, _From, Tab) ->
-  Reply = case ets:lookup(Tab, Key) of
+read(Key) ->
+  setup(),
+  Reply = case ets:lookup(value, Key) of
             [{Key, Value}] ->
               Value;
             [] ->
               nil
           end,
-  {reply, Reply, Tab};
-handle_call(_Message, _From, Tab) ->
-  {reply, {error, unknown_command}, Tab}.
+  Reply.
 
-handle_cast(_Message, Tab) -> {noreply, Tab}.
-handle_info(_Message, Tab) -> {noreply, Tab}.
-terminate(_Reason, _Tab) -> ok.
-code_change(_OldVersion, Tab, _Extra) -> {ok, Tab}.
+setup() ->
+  case ets:info(value) of
+    undefined -> ets:new(value, [set, named_table]);
+    _ -> nil
+  end.

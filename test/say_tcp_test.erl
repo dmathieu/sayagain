@@ -32,7 +32,7 @@ request_test() ->
 request_with_data_test() ->
   Pid = setup(),
   {ok, Socket} = gen_tcp:connect({127,0,0,1}, 5000, [{active,false}]),
-  ?assertEqual(ok, say_value:run(write, [<<"hello">>, <<"world">>])),
+  ?assertEqual(ok, say_value:write(<<"hello">>, <<"world">>)),
   ?assertEqual(ok, gen_tcp:send(Socket, "*2\r\n$3\r\nGET\r\n$5\r\nhello\r\n")),
   ?assertEqual({ok, "$5\r\nworld\r\n"}, gen_tcp:recv(Socket, 0)),
   ?assertEqual(ok, gen_tcp:close(Socket)),
@@ -41,7 +41,7 @@ request_with_data_test() ->
 request_with_data_multiple_line_test() ->
   Pid = setup(),
   {ok, Socket} = gen_tcp:connect({127,0,0,1}, 5000, [{active,false}]),
-  ?assertEqual(ok, say_value:run(write, [<<"hello">>, <<"world">>])),
+  ?assertEqual(ok, say_value:write(<<"hello">>, <<"world">>)),
   ?assertEqual(ok, gen_tcp:send(Socket, "*2\r\n")),
   ?assertEqual(ok, gen_tcp:send(Socket, "$3\r\n")),
   ?assertEqual(ok, gen_tcp:send(Socket, "GET\r\n")),
